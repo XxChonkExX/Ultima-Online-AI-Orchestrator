@@ -4,7 +4,7 @@
 An AI-powered Ultima Online server running on Ollama with LLM models.
 Every NPC in the world has AI-generated dialogue, behaviors, and world events.
 NOTE: As an Orchestrator, you can set several models to handle tasks. One for Dialogue, one for Combat, one for World Events. I use a q6 31b Dense Model for everything
-but you can easily use smaller/more focused or specialist models as needed. I get 1 sec chat reponse times from NPCs on my Q6 18 gb 31b model.
+but you can easily use smaller/more focused or specialist models as needed. I get 1 sec chat reponse times from NPCs on my Q6 18 gb 31b model. Edit: Made the script for AI Enable to fire off automatically. Let me know if there are bugs! Should be so many.
 
 ## What's in this package
 
