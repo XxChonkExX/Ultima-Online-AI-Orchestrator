@@ -63,11 +63,11 @@ Option B: vLLM (high throughput, OpenAI-compatible)
 # Install
 pip install vllm
 
-# Run server (adjust GPU memory)
+# Run server
 python -m vllm.entrypoints.openai.api_server \
   --model meta-llama/Llama-3.1-8B-Instruct \
   --host 0.0.0.0 --port 8000 \
-  --gpu-memory-utilization 0.85
+ 
 Config:
 
 LLMBackend=vllm
