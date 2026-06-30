@@ -1,260 +1,226 @@
-# ServUO AI Shard — Unified Multi-Backend Edition AKA: Orchestrator Symphony Edition
+AIOrchestrator — ServUO AI Enhancement Project
+Overview
+AI-driven NPC systems for ServUO adding dynamic relationships, taming, bounties, hirelings, quests, economy, and emergent world events. Supports multiple LLM backends (Ollama, vLLM, OpenAI, LM Studio, KoboldCpp, TGI, LlamaCpp).
 
-> A single-player/local LAN Ultima Online shard with **Ollama/vLLM/OpenAI-compatible AI NPCs**, AI NPC Faction Wars, AI controlled dynamic world systems and AI controlled emergent narrative. AI World events, Game Master control, AI Spawner Control, AI Quests, AI Faction/Diplomacy, AI Chat, Hireling system revamp, huge new variety of lesser and greater enemies, NPC/Enemy Memories of Players, NEMESIS ENEMY System (yeah they remember you), new faction items and weapons, Sentient weapons (yeah they talk), AI controlled Economy, NPC Loyalty/Hatred/Love/Romance/Apprenticeship, NPCs can live at your house, Player Actions have dynamic effects on world chatter and news, Pet Loyalty revamp. Hell. Everything got touched and has some AI control or wrapper attached.
+Installation
+1. Copy Files to Your ServUO (download a copy of ServUO and jam these guys in there) Next part is a bit trickier.....
+YourServUO/
+├── Scripts/
+│   ├── Custom/
+│   │   └── AIOrchestrator/          ← Copy entire folder here (52 .cs files)
+│   └── Scripts.csproj               ← Add reference (see step 2)
+├── Server/
+│   └── Server.csproj                ← Add reference (see step 2)
+└── Ultima/
+    └── Ultima.csproj                ← Add reference (see step 2)
 
-This is my attempt at trying to create a living, breathing, most over the top version of Ultima Online possible. It is a bunch of my bad code combined with better AI code so expect there to be a trillion bugs. Please let me know what breaks so I can fix it. Or make Deepseek fix it.
+2. Register the Scripts Project
+Edit Scripts/Scripts.csproj and add:
 
----
+<ItemGroup>
+  <Compile Include="Custom\AIOrchestrator\**\*.cs" />
+</ItemGroup>
+(Or in Visual Studio: right-click Scripts project → Add → Existing Item → select all .cs files in AIOrchestrator)
 
-## Quick Start
+3. Configure LLM Backend
+Option A: Ollama (default, local)
+# Install Ollama
+curl -fsSL https://ollama.ai/install.sh | sh  # Linux/macOS
+# Or download from https://ollama.ai for Windows
 
-# Requirements
-- Windows 10/11
-- .NET Framework 4.8 SDK
-- One of: Ollama 0.30+, vLLM, LM Studio, KoboldCpp, TGI, llama.cpp server
+# Pull a model- Nemotron kept jamming Llama in here. Use any model you want. 
+ollama pull llama3.1:8b
+# Or for speed: ollama pull pathfinder-speed (my 31b Gem4 down to q4 and 1024 context for speed)
 
-# Install
-1. Copy this repo to `D:\uo` (or update paths in configs)
-2. Run `dotnet build -c Debug` in `D:\uo\ServUO`
-3. Start `D:\uo\ServUO\ServUO.exe`
-4. Connect client to `127.0.0.1` port `2593`
-```
+OK! The magic can happen here if you want it to. Assign multiple models through this system. Add specialists or generalists as you please. Grab a wordy or concise model. Supersmall coders/toolcallers. Since this is a unified backend compatible, I had Nemotron (god, he sucks. Deepseek is on cool down tho T.T) build instructions for you.
 
----
-
-## Core Philosophy
-
-| Principle | Implementation |
-|-----------|----------------|
-| **No cloud required** | 100% local — any OpenAI-compatible backend or Ollama |
-| **Single-player balanced** | 3× skill/stat caps, 75% cost reduction, fast travel via `[Go` |
-| **GPU isolation** | Intel Arc reserved for Python fine-tuning (PID 24016); 7900 XTX only for LLM |
-| **Ultima-authentic** | Factions = 8 Virtues / 8 Vices per wiki.ultimacodex.com |
-| **Backend-agnostic** | Switch between Ollama/vLLM/OpenAI/LM Studio at runtime |
-
----
-
-## Unified LLM Backend Support
-
-### Single Binary, All Backends
-
-| Backend | Config Value | Endpoint | Notes |
-|---------|--------------|----------|-------|
-| **Ollama** | `ollama` | `http://localhost:11434` | Uses `/api/generate` (Gemma4) or `/api/chat` |
-| **vLLM** | `vllm` | `http://localhost:8000/v1` | Best throughput, PagedAttention |
-| **LM Studio** | `lmstudio` | `http://localhost:1234/v1` | GUI + API |
-| **KoboldCpp** | `koboldcpp` | `http://localhost:5001/v1` | GGUF support |
-| **TGI** | `tgi` | `http://localhost:8080/v1` | HuggingFace Text-Gen-Inference |
-| **llama.cpp server** | `llamacpp` | `http://localhost:8080/v1` | `llama-server -m model.gguf` |
-| **OpenAI/Azure** | `openai` | `https://api.openai.com/v1` | Requires API key |
-
-### Runtime Switching (No Rebuild)
-
-```bash
-# In-game commands
-[AISetBackend vllm
-[AISetModel narrator YourModelHere
-[AISetModel economy mistral-7b
-
-# Or edit D:\uo\ServUO\Config\AIOrchestrator.cfg:
-LLMBackend=vllm
-OpenAIBaseUrl=http://127.0.0.1:8000
-OpenAIApiKey=
-ModelNarrator=YourModelHere
-ModelEconomy=mistral-7b-instruct
-```
-
----
-
-## Model Configuration (Per-Subagent)
-
-```csharp
-// All default to "YourModelHere" — change per subagent
-ModelCombat     = "YourModelHere"   // NPC combat decisions
-ModelDialogue   = "YourModelHere"   // NPC speech
-ModelEnvironment= "YourModelHere"   // Weather/events
-ModelEconomy    = "YourModelHere"   // Price fluctuations
-ModelFaction    = "YourModelHere"   // Diplomacy/war
-ModelSpawner    = "YourModelHere"   // Spawn directives
-ModelDungeon    = "YourModelHere"   // Dungeon encounters
-ModelNarrator   = "YourModelHere"   // Game Master stories
-```
-
----
-
-## AI Architecture
-
-### 6 Model-Driven Subagents (Each Uses Its Own Model Config)
-
-| Subagent | Interval | Output Format | Purpose |
-|----------|----------|---------------|---------|
-| **Economy** | 15 min | `ITEM\|REGION\|CHANGE\|DESC` | Dynamic prices from kill/harvest data |
-| **Faction Diplomat** | 25 min | `TYPE\|TARGET\|OTHER\|DESC` | WAR/ALLIANCE/BOUNTY/TRUCE/SUMMON/BETRAYAL |
-| **Spawn Controller** | 20 min | `TYPE\|CREATURE\|REGION\|MULT\|DESC` | SURGE/SUPPRESS/EMPOWER/INVASION/RETREAT |
-| **Dungeon Master** | 15 min | `TYPE\|DUNGEON\|DESC\|EFFECT` | Encounters, traps, treasure, boss tactics |
-| **Environment** | 10–15 min | `WEATHER\|DESC` / `TYPE\|DESC` | 12 weather types, 16 event types |
-| **Game Master (Narrator)** | 15 min | Free text `[Rumor]`/`[Warning]` | Multi-phase narrative (Calm→Build→Crisis→Resolve) |
-
-**All subagents:** These can easily be scaled up to suit performance and system/server needs.
-- Call `LLMClient.ChatAsync(system, prompt, modelName)` — backend-agnostic
-- Emit **pipe-delimited** lines (no JSON — avoids .NET 4.8 type init crash)
-- Run async via `Task.Run` from static timers (non-blocking)
-- Staggered intervals to spread GPU load
-- `SemaphoreSlim(2)` concurrency gate, 30s timeout, `max_tokens=30`, `ctx=1024`
-
----
-
-## Major Features
-
-### 1. Virtue/Vice Faction System (18 Factions)
-```
-Virtue Factions                    Vice Factions
-├── Britain Guard       (Honesty)  ├── Cult of Deceit        (Deceit)
-├── Healer's Circle     (Compassion)├── Orcish Horde          (Cruelty)
-├── Trinsic Paladins    (Valor)    ├── Bandit's Guild        (Cowardice)
-├── Moonglow Mages      (Justice)  ├── Necromancer Cult      (Injustice)
-├── Minoc Crafters      (Sacrifice)├── Undead Scourge        (Gluttony)
-├── Jhelom Mercenaries  (Honor)    ├── Pirate Brotherhood    (Dishonor)
-├── Woodland Protectors (Spirituality)├── Void Abyss            (Unbelief)
-├── Humble Folk         (Humility) ├── Prideful Sorcerers    (Pride)
-└── Merchant League (Neutral)      └── Dragon Brood (Neutral/Chaotic)
-```
-- Each NPC has `VirtueAlignment` + `ViceAlignment` enums
-- Player actions shift reputation; NPCs remember & react
-
-### 2. AI Quest System (13 Quest Types)
-| Classic | New (AI-Expanded) |
-|---------|-------------------|
-| KillCount, Collect, Deliver, Escort, Explore | **CombatBoss, MerchantRun, CraftItem, NpcRelation, GuardDuty, Rescue, Scout, GatherResource, Bounty** |
-- Progress hooks: `ReportKill`, `ReportDelivery`, `ReportCrafted`, `ReportGathered`, `ReportGuardDutyProgress`, `ReportScoutComplete`, `ReportNpcRelation`
-- LLM generates flavor text per NPC personality
-
-### 3. Hero Hirelings (10 Classes)
-Warrior, Archer, Mage, Paladin, Ranger, Ninja, AnimalTamer, Necromancer, Bard, Alchemist
-- Unique gear, hire cost, context-menu hire/dismiss
-- Auto-repopulating spawner (3 min)
-
-### 4. Creature Variants (16 New Types + AI-Integrated Spawner)
-```
-OrcShaman, OrcArcher, OrcKnight, OrcBeastmaster,
-LizardmanShaman, LizardmanSniper,
-TrollWitchdoctor,
-SkeletalMage, SkeletalArcher,
-LesserOrc, LesserDragon, LesserDaemon,
-GreaterOrc, GreaterTroll, GreaterSkeleton
-```
-- **CreatureVariantSpawner** with 6 themes (OrcCamp, LizardmanNest, TrollCave, UndeadCrypt, LesserDungeon, GreaterThreat)
-- **AI-integrated**: respects SpawnController directives (multiplier, suppress, empower)
-
-### 5. Faction-Themed Loot
-Dragon scales, daemon blades, tribal warclubs, shrouds, giant hammers, gems — 30% drop rate per creature type
-
-### 6. Multi-Phase Narrative Engine
-```
-Calm  →  Build  →  Crisis  →  Resolve  →  Calm
-  │       │         │          │
-  ▼       ▼         ▼          ▼
-Rumors  Tension  Invasion  Aftermath
-```
-- Phase shifts every 3–8 ticks (35% chance after min)
-- Game Master queries **all 5 other subagents** + deeds/threats for context
-- Commands: `[GMThink`, `[GMStory`, `[GMPhase`, `[GMArcs`
-
----
-
-## Configuration (`D:\uo\ServUO\Config\AIOrchestrator.cfg`)
-
-```ini
-# AIOrchestrator.cfg - AI Orchestrator Configuration
-# Edit and use [AIReload to apply changes
+Config (Server/Config/AIOrchestrator.cfg):
 
 Enabled=true
-HeartbeatMs=500
-MaxNpcsPerPlayer=25
-LLMBackend=ollama              # ollama | vllm | openai | lmstudio | koboldcpp | tgi | llamacpp
+LLMBackend=ollama
 OllamaBaseUrl=http://127.0.0.1:11434
+ModelCombat=llama3.1:8b
+ModelDialogue=llama3.1:8b
+ModelEnvironment=llama3.1:8b
+ModelEconomy=llama3.1:8b
+ModelFaction=llama3.1:8b
+ModelSpawner=llama3.1:8b
+ModelDungeon=llama3.1:8b
+ModelNarrator=llama3.1:8b
+
+Option B: vLLM (high throughput, OpenAI-compatible)
+# Install
+pip install vllm
+
+# Run server (adjust GPU memory)
+python -m vllm.entrypoints.openai.api_server \
+  --model meta-llama/Llama-3.1-8B-Instruct \
+  --host 0.0.0.0 --port 8000 \
+  --gpu-memory-utilization 0.85
+Config:
+
+LLMBackend=vllm
 OpenAIBaseUrl=http://127.0.0.1:8000
-OpenAIApiKey=
-ModelCombat=YourModelHere
-ModelDialogue=YourModelHere
-ModelEnvironment=YourModelHere
-ModelEconomy=YourModelHere
-ModelFaction=YourModelHere
-ModelSpawner=YourModelHere
-ModelDungeon=YourModelHere
-ModelNarrator=YourModelHere
-RagEnabled=false
-RagUrl=http://127.0.0.1:6333
-RagCollection=uo_lore
-ChatterEnabled=true
-RoutineEnabled=true
-GossipEnabled=true
-FavorEnabled=true
-DenizenEnabled=true
-AnomalyEnabled=true
-RequestTimeoutMs=30000
-MaxReplyChars=240
-MaxMemoryTurns=6
-```
+OpenAIApiKey=  # leave empty for local
+ModelCombat=meta-llama/Llama-3.1-8B-Instruct
+ModelDialogue=meta-llama/Llama-3.1-8B-Instruct
+# ... same for all models
 
----
+Option C: LM Studio (GUI + local server)
+Install LM Studio from https://lmstudio.ai
+Load a model (e.g., llama-3.1-8b-instruct)
+Click "Start Server" (default port 1234)
+Config:
+LLMBackend=lmstudio
+OpenAIBaseUrl=http://127.0.0.1:1234
+ModelCombat=llama-3.1-8b-instruct
+# ...
 
-## Admin Commands
+Option D: OpenAI / Cloud
+LLMBackend=openai
+OpenAIBaseUrl=https://api.openai.com
+OpenAIApiKey=sk-your-key-here
+ModelCombat=gpt-4o-mini
+ModelDialogue=gpt-4o-mini
+# ...
 
-| Command | Access | Description |
-|---------|--------|-------------|
-| `[AIReload` | GM | Reload config from disk |
-| `[AIToggle` | GM | Enable/disable all AI |
-| `[AIDebug` / `[AIStatus` | GM | Show full config status |
-| `[AISetModel <type> <model>` | GM | Set model for subagent (combat\|dialogue\|environment\|economy\|faction\|spawner\|dungeon\|narrator) |
-| `[AISetBackend <backend>` | GM | Switch LLM backend (ollama\|vllm\|openai\|lmstudio\|koboldcpp\|tgi\|llamacpp) |
-| `[GMThink` | Admin | Force Game Master story tick |
-| `[GMStory` | Admin | Show full world state (all subagents) |
-| `[GMPhase <Calm\|Build\|Crisis\|Resolve>` | Admin | Get/set narrative phase |
-| `[GMArcs` | Admin | List active narrative arcs |
+Option E: KoboldCpp / TGI / LlamaCpp
+All use OpenAI-compatible API:
 
----
+# KoboldCpp (--api flag)
+LLMBackend=koboldcpp
+OpenAIBaseUrl=http://127.0.0.1:5001
 
-## Directory Structure
-```
-D:\uo\
-├── ServUO.exe
-├── Scripts.dll
-├── Config\AIOrchestrator.cfg
-└── Scripts\Custom\AIOrchestrator\      (33 .cs files)
-    ├── Core: AIConfig, LLMClient, AIHeartbeat, AIOrchestratorInit
-    ├── Subagents: Economy, FactionDiplomat, SpawnController, DungeonMaster, Environment, AIGameMaster
-    ├── Quests: AIQuestSystem, AIQuestManager, QuestProgressHook
-    ├── Factions: NpcFaction, FactionReputationSystem
-    ├── World: LivingEconomy, RegionalThreatSystem, PlayerDeedTracker, NPCRelationshipSystem
-    ├── Content: HeroHireling, CreatureVariants, LootTableIntegration
-    └── Hooks: DungeonRegionHook, AIEventIntegration, EconomyDataHook2
-```
-## Migration: Ollama → vLLM (30 sec)
+# TGI (HuggingFace Text Generation Inference)
+LLMBackend=tgi
+OpenAIBaseUrl=http://127.0.0.1:8080
 
-```bash
-# 1. Convert model to HF format (if GGUF)
-#    Use: llama.cpp convert.py or download HF version
+# LlamaCpp (--server)
+LLMBackend=llamacpp
+OpenAIBaseUrl=http://127.0.0.1:8080
+4. Network Configuration
+Localhost Only (default)
+All backends default to 127.0.0.1. Server and LLM must run on same machine.
 
-# 2. Serve with vLLM
-vllm serve YourModelHere --gpu-memory-utilization 0.9 --max-model-len 1024 --port 8000
+LAN / Remote LLM
+If LLM runs on another machine:
 
-# 3. In-game
-[AISetBackend vllm
-[AISetModel narrator YourModelHere
+# Example: vLLM on 192.168.1.50:8000
+OpenAIBaseUrl=http://192.168.1.50:8000
+Ensure firewall allows the port (8000, 11434, 1234, 5001, 8080, etc.).
 
-# 4. Verify
-[AIStatus
-```
+Docker / Container
+If ServUO runs in Docker but LLM on host:
 
-## Credits
-- **ServUO** — Core emulator (GPL-3.0)
-- **Ollama / vLLM / LM Studio / KoboldCpp / TGI / llama.cpp** — Local LLM runtimes
-- **pathfinder-speed** — Model (7B Q4_K_M)
-- **Ultima Codex** — Virtue/Vice reference
-- **DeepSeek 4 Flash and Nemotron 3
+# Use host.docker.internal (Docker Desktop) or host IP
+OllamaBaseUrl=http://host.docker.internal:11434
+OpenAIBaseUrl=http://host.docker.internal:8000
+Reverse Proxy (nginx/Traefik)
+# nginx example for vLLM
+server {
+    listen 8000;
+    location /v1/ {
+        proxy_pass http://localhost:8001/v1/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+Then OpenAIBaseUrl=http://your-proxy:8000
 
----
+5. Build & Run -Nemo built some whack batch file, Deepseek had a better one but Nemo trashed it so this is what you get since its late. Just run builder from ServUO if this sucks
+# Windows
+_windebug.bat
 
-## License
-ServUO is GPL-3.0. This AI orchestration layer follows the same license.
+# Or via dotnet
+dotnet build Scripts/Scripts.csproj -c Debug
+dotnet build Server/Server.csproj -c Debug
+Run:
+
+_windebug.bat
+# Server starts on port 2593 (default)
+In-Game Commands (GM)
+[AIReload           — Reload config without restart
+[AIStatus           — Show current backend, models, settings
+[AIToggle           — Enable/disable AI system
+[AISetBackend <backend>  — Switch: ollama|vllm|openai|lmstudio|koboldcpp|tgi|llamacpp
+[AISetModel <type> <name>  — combat|dialogue|environment|economy|faction|spawner|dungeon|narrator
+
+Core Systems
+
+NPC Relationship System
+States: Stranger → Acquaintance → Friend → Trusted → RomanticPartner / Hired / Apprentice / Household
+Affinity (0–1000) via gifts, dialogue, combat, proximity
+Unlocks: hire, apprentice, romance, assign role (guard/vendor/crafter/farmer/cook/entertainer), move into house
+Context menu on all tamable/hired/vendor NPCs
+Universal Taming
+All creatures tamable — auto MinTameSkill / ControlSlots from stats/abilities/fame
+Paragon/boss scaling, taming mastery support
+No manual creature edits
+Tame → Relationship Integration
+Tamed creatures auto-gain relationship entries
+Affinity on tame, bond, level-up, feeding, combat
+Hero Hirelings
+Classes: Warrior/Mage/Ranger/Cleric/Bard/Rogue/Paladin/Necromancer
+Level/XP, skill training, equipment, loyalty, inventory
+Gold hire/dismiss, world spawners
+Bounty System
+Procedural bounties on elites (champions, paragons, bosses)
+Region-aware, tiered rewards (gold, faction rep, rare items)
+Bounty boards for towns/inns
+Living Economy
+Supply/demand per region, dynamic prices, trade routes
+Faction-themed loot tables
+Regional Threats
+Threat levels escalate from player activity
+Dynamic spawn scaling, elite patrols, world events
+Nemesis System
+Personal nemeses remember player, scale with them
+Persistent grudges, unique loot
+AI Game Master
+Emergent multi-phase narrative arcs
+World-state synthesis (economy, threats, deeds, factions)
+LLM-driven event generation
+Faction Reputation & Diplomacy
+Player/NPC faction standing
+Dynamic alliances, war, trade embargoes
+AI diplomat subagent
+Dynamic Quests
+Procedural: kill, gather, escort, explore, craft, relation
+Nested objectives, time limits, branching outcomes
+Relationship integration
+Quality-of-Life Features
+Gumps
+RelationshipGump — All NPC bonds, affinity, state, role, household
+BountyBoardGump — Browse/accept bounties, track progress
+HirelingMarketGump — Global hireling browser with filters
+CommunityBoardGump — Player posts (trade, group, RP), 24hr expiry
+Items
+LoveLetter — Give to NPCs: +50 affinity (+100 if RomanticPartner)
+BountyHunterBadge — Kill tracking, ranks (Novice→Legendary), auto-updates
+TownPlotDeed — 60-sec town housing exemption in guarded regions
+Food/Drink: HeartyStew (HP+Stam), DragonBreathWhiskey (Fire Resist), ManaBerryPie (Mana), GoblinAle (Str/Dex trade)
+Weapons: LichBoneStaff (ManaLeech), OrcishWarAxe (StamLeech)
+Armor: TrollSkinBoots (HP Regen)
+Reagents: PhoenixFeather, VampireFang
+NPCs & Quests
+RomanceQuestGiver — 3-step: Nightshade → Defend rival → Craft Gold Ring → LoveLetter
+Player Commands
+[ViewRelations        — Target NPC → RelationshipGump
+[AddCommunityBoard    — Place community board
+[AddBountyBoard       — Place bounty board
+[AddRomanceGiver      — Spawn romance quest giver
+[HirelingMarket       — Open hireling market
+Integration Hooks
+Context menu: "View Relationship", "Give Love Letter" (when carrying)
+Drag-drop: LoveLetter → NPC consumes for affinity
+Event: BountyHunterBadge records kills on creature death
+Registered in AIOrchestratorInit.Initialize()
+Project Structure
+Scripts/Custom/AIOrchestrator/
+├── Core (49 files)
+├── Factions/ (3 files)
+└── QoL (12 files)
+Requirements
+ServUO (current)
+.NET 8.0+
+LLM backend of choice (see above)
