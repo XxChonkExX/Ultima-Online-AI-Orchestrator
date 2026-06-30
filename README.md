@@ -35,13 +35,13 @@ Edit Scripts/Scripts.csproj and add:
 
 3. Configure LLM Backend
 Option A: Ollama (default, local)
-# Install Ollama
+# Install Ollama/vLLM/OpenAI whatevers (More instructions on that below)
 curl -fsSL https://ollama.ai/install.sh | sh  # Linux/macOS
 # Or download from https://ollama.ai for Windows
 
 # Pull a model- Nemotron kept jamming Llama in here. Use any model you want. 
 ollama pull llama3.1:8b
-# Or for speed: ollama pull pathfinder-speed (my 31b Gem4 down to q4 and 1024 context for speed)
+
 
 OK! The magic can happen here if you want it to. Assign multiple models through this system. Add specialists or generalists as you please. Grab a wordy or concise model. Supersmall coders/toolcallers. Since this is a unified backend compatible, I had Nemotron (god, he sucks. Deepseek is on cool down tho T.T) build instructions for you.
 
