@@ -29,7 +29,8 @@ Edit Scripts/Scripts.csproj and add:
 <ItemGroup>
   <Compile Include="Custom\AIOrchestrator\**\*.cs" />
 </ItemGroup>
-      
+
+or <Compile Include="Custom\AIOrchestrator\**\*.cs" />
 (Or in Visual Studio: right-click Scripts project → Add → Existing Item → select all .cs files in AIOrchestrator)
 
 3. Configure LLM Backend
