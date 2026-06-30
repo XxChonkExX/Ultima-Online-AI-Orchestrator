@@ -6,7 +6,7 @@ Installation
 1. Copy Files to Your ServUO (download a copy of ServUO and jam these guys in there) Next part is a bit trickier.....
 
 
-  ServUO/
+  UOAIServer/  (Copy your ServUO Into here or viceversa)
 
     Scripts/
 
