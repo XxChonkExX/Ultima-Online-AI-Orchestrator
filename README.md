@@ -5,29 +5,23 @@ AI-driven NPC systems for ServUO adding dynamic relationships, taming, bounties,
 Installation
 1. Copy Files to Your ServUO (download a copy of ServUO and jam these guys in there) Next part is a bit trickier.....
 
-ServUO/
 
-  Scripts/
+  ServUO/
 
-    Custom/
+    Scripts/
 
-      AIOrchestrator/          <-- PASTE FOLDER HERE
+          Custom/
 
-        *.cs                   (49 files)
+              AIOrchestrator/*.cs (49 files)
 
-        Factions/
+                  Factions/*.cs                 (3 files)
+                Scripts.csproj             <-- ADD ONE LINE
 
-          *.cs                 (3 files)
+    Server/ (in the servUO)
+      Server.csproj
 
-    Scripts.csproj             <-- ADD ONE LINE
-
-  Server/
-
-    Server.csproj
-
-  Ultima/
-  
-    Ultima.csproj
+    Ultima/
+      Ultima.csproj
 
 2. Register the Scripts Project
 Edit Scripts/Scripts.csproj and add:
