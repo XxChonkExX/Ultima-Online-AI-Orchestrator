@@ -6,17 +6,17 @@ Installation
 1. Copy Files to Your ServUO (download a copy of ServUO and jam these guys in there) Next part is a bit trickier.....
 
 ServUO/
-├── Scripts/
-│   ├── Custom/
-│   │   └── AIOrchestrator/      ← Paste here (52 .cs files + Factions/)
-│   │       ├── *.cs             (49 core files)
-│   │       └── Factions/
-│   │           └── *.cs         (3 files)
-│   └── Scripts.csproj           ← Add one line (below)
-├── Server/
-│   └── Server.csproj
-└── Ultima/
-    └── Ultima.csproj
+  Scripts/
+    Custom/
+      AIOrchestrator/          <-- PASTE FOLDER HERE
+        *.cs                   (49 files)
+        Factions/
+          *.cs                 (3 files)
+    Scripts.csproj             <-- ADD ONE LINE
+  Server/
+    Server.csproj
+  Ultima/
+    Ultima.csproj
 
 2. Register the Scripts Project
 Edit Scripts/Scripts.csproj and add:
