@@ -4,6 +4,7 @@ AI-driven NPC systems for ServUO adding dynamic relationships, taming, bounties,
 
 Installation
 1. Copy Files to Your ServUO (download a copy of ServUO and jam these guys in there) Next part is a bit trickier.....
+
 YourServUO/
 ├── Scripts/
 │   ├── Custom/
@@ -20,6 +21,7 @@ Edit Scripts/Scripts.csproj and add:
 <ItemGroup>
   <Compile Include="Custom\AIOrchestrator\**\*.cs" />
 </ItemGroup>
+      
 (Or in Visual Studio: right-click Scripts project → Add → Existing Item → select all .cs files in AIOrchestrator)
 
 3. Configure LLM Backend
