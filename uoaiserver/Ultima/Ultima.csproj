@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net48</TargetFramework>
+		<OutputType>Library</OutputType>
+		<AppendTargetFrameworkToOutputPath>False</AppendTargetFrameworkToOutputPath>
+		<GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+		<UseVSHostingProcess>False</UseVSHostingProcess>
+		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+		<Platforms>x64</Platforms>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+		<OutputPath>..\</OutputPath>
+		<DefineConstants>TRACE;DEBUG;NEWTIMERS;ServUO</DefineConstants>
+		<DebugType>embedded</DebugType>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+		<OutputPath>..\</OutputPath>
+		<DefineConstants>TRACE;NEWTIMERS;ServUO</DefineConstants>
+		<DebugType>none</DebugType>
+	</PropertyGroup>
+</Project>
