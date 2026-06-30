@@ -230,21 +230,6 @@ D:\uo\
     ├── Content: HeroHireling, CreatureVariants, LootTableIntegration
     └── Hooks: DungeonRegionHook, AIEventIntegration, EconomyDataHook2
 ```
-
----
-
-## Performance Notes
-
-| Metric | Ollama | vLLM (est.) |
-|--------|--------|-------------|
-| Model | pathfinder-speed 7B Q4_K_M | Same (HF format) |
-| GPU layers | 40/61 | N/A (full GPU) |
-| Generation speed | ~25s / 30 tok (1.4 tok/s) | ~2-5s / 30 tok |
-| Max concurrent | 2 (semaphore) | 2 (configurable)adjustable) |
-| VRAM | ~14 GB | ~16-18 GB |
-
----
-
 ## Migration: Ollama → vLLM (30 sec)
 
 ```bash
