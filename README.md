@@ -1,4 +1,4 @@
-# ServUO AI Shard — Unified Multi-Backend Edition
+# ServUO AI Shard — Unified Multi-Backend Edition AKA: Orchestrator Symphony Edition
 
 > A single-player/local LAN Ultima Online shard with **Ollama/vLLM/OpenAI-compatible AI NPCs**, AI NPC Faction Wars, AI controlled dynamic world systems and AI controlled emergent narrative. AI World events, Game Master control, AI Spawner Control, AI Quests, AI Faction/Diplomacy, AI Chat, Hireling system revamp, huge new variety of lesser and greater enemies, NPC/Enemy Memories of Players, NEMESIS ENEMY System (yeah they remember you), new faction items and weapons, Sentient weapons (yeah they talk), AI controlled Economy, NPC Loyalty/Hatred/Love/Romance/Apprenticeship, NPCs can live at your house, Player Actions have dynamic effects on world chatter and news, Pet Loyalty revamp. Hell. Everything got touched and has some AI control or wrapper attached.
 
