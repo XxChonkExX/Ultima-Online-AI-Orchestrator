@@ -321,13 +321,13 @@ Each with a unique WeaponAbility: Sewer King (BleedAttack), Tidal Lord Aquanis (
 
 ### ServUO Setup
 
-1. **Copy the files** into your ServUO installation:
+1. **Copy the files** into your ServUO installation: You need to download a copy of ServUO and throw my files to overwrite.
    ```
    Scripts/Custom/AIOrchestrator/  →  your ServUO/Scripts/Custom/AIOrchestrator/
    ```
    (Or compile directly — the project file at `Scripts/Scripts.csproj` auto-includes all `.cs` files under `Scripts/Custom/`.)
 
-2. **Modify `SetItem.cs`** (ServUO base code):
+2. **Modify `SetItem.cs`** (ServUO base code): The tricky part (use the script)
    Add the 6 new SetItem enum values to `Scripts/Items/Artifacts/Equipment/Armor/Sets/SetItem.cs`:
    ```cs
    ShadowVault, FrostCitadel, CrystalCavern, DwarvenPlate, VoidRift, CoralScale
@@ -349,7 +349,7 @@ Each with a unique WeaponAbility: Sewer King (BleedAttack), Tidal Lord Aquanis (
 
 ### LLM Backend Setup
 
-AIOrchestrator supports 7 LLM backends. You only need **one**.
+AIOrchestrator supports 7 LLM backends. You only need **one**. You can choose many though!
 
 #### Option A: Ollama (Recommended — Easiest)
 ```bash
